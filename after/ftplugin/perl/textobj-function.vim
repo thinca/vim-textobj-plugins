@@ -21,14 +21,23 @@ if !exists('g:textobj_function_perl_select')
         break
       endif
 
-      call setpos('.', r[1])
+      call setpos('.', r[0])
       call s:left()
 
       unlet! range
       let range = r
       let c -= 1
     endwhile
-    return range
+
+    let type = 'v'
+    call setpos('.', range[0])
+    if getline('.')[:col('.') - 2] =~ '^\s*$'
+      call setpos('.', range[1])
+      if getline('.')[col('.'):] =~ '^\s*$'
+        let type = 'V'
+      endif
+    endif
+    return [type] + range
   endfunction
 
 
@@ -91,7 +100,7 @@ if !exists('g:textobj_function_perl_select')
         call s:left()
         continue
       endif
-      return ['v', b, e]
+      return [b, e]
     endwhile
     return 0
   endfunction
