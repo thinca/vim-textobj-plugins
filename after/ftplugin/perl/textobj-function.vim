@@ -53,7 +53,7 @@ if !exists('g:textobj_function_perl_select')
     let e = getpos('.')
 
     call setpos('.', endpos)
-    normal %
+    call s:jump_to_pair()
 
     if getline('.')[col('.'):] =~ '^\s*$'
       normal! j0
@@ -75,15 +75,15 @@ if !exists('g:textobj_function_perl_select')
 
       call search('\v<sub>\s*\k*\s*.', 'ceW')
       if s:cursor_char() == '('
-        normal %
+        call s:jump_to_pair()
       endif
 
-      while s:cursor_char() != '{' || s:cursor_syn() == 'Comment'
+      while s:cursor_char() != '{' || s:cursor_syn() ==# 'Comment'
         if search('{', 'W') == 0
           return 0
         endif
       endwhile
-      normal %
+      call s:jump_to_pair()
       let e = getpos('.')
 
       if e[1] < start[1] || (e[1] == start[1] && e[2] < start[2])
@@ -94,6 +94,10 @@ if !exists('g:textobj_function_perl_select')
       return ['v', b, e]
     endwhile
     return 0
+  endfunction
+
+  function! s:jump_to_pair()
+    normal %
   endfunction
 
   function! s:left()
