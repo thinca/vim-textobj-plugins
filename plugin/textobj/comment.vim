@@ -1,6 +1,6 @@
-" textobj-comment - Text objects for a comment.
-" Version: 0.0
-" Author : thinca <http://d.hatena.ne.jp/thinca/>
+" Text objects for a comment.
+" Version: 0.1.1
+" Author : thinca <thinca+vim@gmail.com>
 " License: Creative Commons Attribution 2.1 Japan License
 "          <http://creativecommons.org/licenses/by/2.1/jp/deed.en>
 
@@ -27,11 +27,13 @@ call textobj#user#plugin('comment', {
 
 " Misc.  "{{{1
 function! s:select_a()  "{{{2
+  call search('^\s*\%#\s*\S', 'eW')
   if !s:is_comment()
     return 0
   endif
 
   let c = getpos('.')
+  let [b, e] = [c, c]
 
   let [save_ww, save_lz] = [&whichwrap, &lazyredraw]
   set whichwrap=h,l lazyredraw
@@ -40,10 +42,15 @@ function! s:select_a()  "{{{2
     normal! h
     if !s:is_comment()
       normal! l
+      if search('.\n\s*\%#', 'bW')
+        if s:is_comment()
+          continue
+        endif
+      endif
       break
     endif
+    let b = getpos('.')
   endwhile
-  let b = getpos('.')
 
   call setpos('.', c)
 
@@ -52,10 +59,15 @@ function! s:select_a()  "{{{2
     normal! l
     if !s:is_comment()
       normal! h
+      if search('\%#.\n\s*\S', 'eW')
+        if s:is_comment()
+          continue
+        endif
+      endif
       break
     endif
+    let e = getpos('.')
   endwhile
-  let e = getpos('.')
 
   let [&whichwrap, &lazyredraw] = [save_ww, save_lz]
 
@@ -90,7 +102,7 @@ endfunction
 
 function! s:is_comment()
   for id in synstack(line('.'), col('.'))
-    if synIDattr(synIDtrans(id), 'name') == 'Comment'
+    if synIDattr(synIDtrans(id), 'name') ==# 'Comment'
       return 1
     endif
   endfor
